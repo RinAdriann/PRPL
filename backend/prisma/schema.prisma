@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CHILD
+  EDUCATOR
+}
+
+enum Difficulty {
+  BASIC
+  ADVANCED
+}
+
+model User {
+  id            Int        @id @default(autoincrement())
+  role          Role
+  email         String?    @unique
+  passwordHash  String?
+  name          String
+  createdAt     DateTime   @default(now())
+  educator      Educator?
+  child         Child?
+}
+
+model Educator {
+  id                 Int         @id @default(autoincrement())
+  userId             Int         @unique
+  user               User        @relation(fields: [userId], references: [id])
+  defaultDifficulty  Difficulty  @default(BASIC)
+  children           Enrollment[]
+}
+
+model Child {
+  id           Int        @id @default(autoincrement())
+  userId       Int        @unique
+  user         User       @relation(fields: [userId], references: [id])
+  avatar       String?
+  enrollments  Enrollment[]
+  progress     Progress[]
+  quizAttempts QuizAttempt[]
+  rewards      Reward[]
+  unlockedLvl  Int        @default(1)
+}
+
+model Enrollment {
+  id          Int      @id @default(autoincrement())
+  educatorId  Int
+  childId     Int
+  educator    Educator @relation(fields: [educatorId], references: [id])
+  child       Child    @relation(fields: [childId], references: [id])
+}
+
+model Lesson {
+  id          Int         @id @default(autoincrement())
+  title       String
+  topic       String
+  difficulty  Difficulty
+  pages       LessonPage[]
+  quiz        Quiz?
+}
+
+model LessonPage {
+  id        Int    @id @default(autoincrement())
+  lessonId  Int
+  pageNo    Int
+  imageUrl  String
+  audioUrl  String
+  caption   String?
+  lesson    Lesson @relation(fields: [lessonId], references: [id])
+}
+
+model Quiz {
+  id          Int            @id @default(autoincrement())
+  lessonId    Int?
+  topic       String
+  difficulty  Difficulty
+  questions   QuizQuestion[]
+  lesson      Lesson?        @relation(fields: [lessonId], references: [id])
+}
+
+enum QuizQuestionType {
+  MATCHING
+}
+
+model QuizQuestion {
+  id          Int              @id @default(autoincrement())
+  quizId      Int
+  type        QuizQuestionType
+  prompt      String
+  // JSON fields for drag-drop/matching
+  // items: list of draggable tokens
+  items       Json
+  // targets: list of dropzones
+  targets     Json
+  // correct mapping {itemKey: targetKey}
+  answerMap   Json
+  quiz        Quiz             @relation(fields: [quizId], references: [id])
+}
+
+model Progress {
+  id         Int       @id @default(autoincrement())
+  childId    Int
+  lessonId   Int
+  completed  Boolean   @default(false)
+  completedAt DateTime?
+  child      Child     @relation(fields: [childId], references: [id])
+  lesson     Lesson    @relation(fields: [lessonId], references: [id])
+}
+
+model QuizAttempt {
+  id        Int      @id @default(autoincrement())
+  childId   Int
+  quizId    Int
+  score     Int
+  passed    Boolean
+  createdAt DateTime @default(now())
+  child     Child    @relation(fields: [childId], references: [id])
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model Reward {
+  id       Int    @id @default(autoincrement())
+  childId  Int
+  name     String
+  iconUrl  String
+  child    Child  @relation(fields: [childId], references: [id])
+}
