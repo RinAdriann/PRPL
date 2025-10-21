@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { dropTick, errorChime, successChime } from "./sfx";
 
 type Item = { key: string; label: string };
 type Target = { key: string; label: string };
@@ -20,9 +21,8 @@ export default function DragDropQuiz({
       setMapping(newMap);
       onChange(newMap);
       setDragKey(null);
-      // success sound
-      const a = new Audio("/assets/sounds/drop.mp3");
-      a.play().catch(()=>{});
+      // Sound feedback without external assets
+      dropTick().catch(()=>{});
     }
   }
 
@@ -80,3 +80,6 @@ export default function DragDropQuiz({
     </div>
   );
 }
+
+// Optional helper for external callers to play success/error sounds
+export const QuizSFX = { successChime, errorChime };
