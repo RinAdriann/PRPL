@@ -1,0 +1,26 @@
+{
+  "name": "EduVillage",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20", "pnpm": "latest" },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/sqlite:1": {}
+  },
+  "forwardPorts": [4000, 5173],
+  "portsAttributes": {
+    "4000": { "label": "API", "onAutoForward": "openBrowser", "protocol": "http" },
+    "5173": { "label": "Frontend", "onAutoForward": "openBrowser", "protocol": "http" }
+  },
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "postAttachCommand": "bash .devcontainer/postAttach.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "Prisma.prisma",
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}
