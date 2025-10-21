@@ -1,79 +1,134 @@
-import { Router } from "express";
-import { prisma } from "../prisma.js";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
-export const quizzesRouter = Router();
+const prisma = new PrismaClient();
 
-// GET /api/quizzes/:quizId
-quizzesRouter.get("/:quizId", async (req, res, next) => {
-  try {
-    const quizId = Number(req.params.quizId);
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
-      include: { questions: true },
-    });
-    if (!quiz) return res.status(404).json({ error: "Quiz not available" });
-    res.json(quiz);
-  } catch (e) {
-    next(e);
-  }
-});
+async function main() {
+  // Educator
+  const passwordHash = await bcrypt.hash("password123", 10);
+  const eduUser = await prisma.user.upsert({
+    where: { email: "teacher@example.com" },
+    update: {},
+    create: {
+      role: "EDUCATOR",
+      email: "teacher@example.com",
+      passwordHash,
+      name: "Teacher One",
+      educator: { create: { defaultDifficulty: "BASIC" } },
+    },
+  });
 
-// POST /api/quizzes/submit
-// body: { childId, quizId, answers: Array<{questionId, mapping: Record<string,string>}> }
-quizzesRouter.post("/submit", async (req, res, next) => {
-  try {
-    const started = Date.now();
-    const { childId, quizId, answers } = req.body || {};
-    if (!childId || !quizId || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid payload" });
+  // Child
+  const childUser = await prisma.user.create({
+    data: {
+      role: "CHILD",
+      name: "Asha",
+      child: { create: { avatar: "/assets/avatars/elephant.png" } },
+    },
+  });
 
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
-      include: { questions: true },
-    });
-    if (!quiz) return res.status(404).json({ error: "Quiz not available" });
+  // Enroll child
+  await prisma.enrollment.create({
+    data: {
+      educatorId: eduUser.educator!.id,
+      childId: childUser.child!.id,
+    },
+  });
 
-    let correctCount = 0;
-    const feedback: Array<{ questionId: number; correct: boolean }> = [];
+  // Lesson with pages
+  const natureLesson = await prisma.lesson.create({
+    data: {
+      title: "Plants and Nature",
+      topic: "Nature",
+      difficulty: "BASIC",
+      pages: {
+        create: [
+          {
+            pageNo: 1,
+            imageUrl: "/assets/lessons/nature/plant1.jpg",
+            audioUrl: "/assets/audio/nature/plant1.mp3",
+            caption: "Plants need sun.",
+          },
+          {
+            pageNo: 2,
+            imageUrl: "/assets/lessons/nature/plant2.jpg",
+            audioUrl: "/assets/audio/nature/plant2.mp3",
+            caption: "Plants need water.",
+          },
+          {
+            pageNo: 3,
+            imageUrl: "/assets/lessons/nature/plant3.jpg",
+            audioUrl: "/assets/audio/nature/plant3.mp3",
+            caption: "Plants grow from seeds.",
+          },
+        ],
+      },
+    },
+  });
 
-    for (const q of quiz.questions) {
-      const ans = answers.find((a: any) => a.questionId === q.id);
-      let isCorrect = false;
-      if (ans && typeof ans.mapping === "object") {
-        const correctMap = q.answerMap as any;
-        const keys = Object.keys(correctMap);
-        isCorrect = keys.every(k => ans.mapping[k] === correctMap[k]);
-      }
-      if (isCorrect) correctCount++;
-      feedback.push({ questionId: q.id, correct: isCorrect });
-    }
+  // Quiz for lesson
+  await prisma.quiz.create({
+    data: {
+      lessonId: natureLesson.id,
+      topic: "Nature",
+      difficulty: "BASIC",
+      questions: {
+        create: [
+          {
+            type: "MATCHING",
+            prompt: "Match pictures to words",
+            items: JSON.stringify({
+              items: [
+                { key: "sun", label: "☀️" },
+                { key: "water", label: "💧" },
+                { key: "seed", label: "🌱" },
+              ],
+            }),
+            targets: JSON.stringify({
+              targets: [
+                { key: "seed", label: "Seed" },
+                { key: "sun", label: "Sun" },
+                { key: "water", label: "Water" },
+              ],
+            }),
+            answerMap: JSON.stringify({ sun: "sun", water: "water", seed: "seed" }),
+          },
+        ],
+      },
+    },
+  });
 
-    const score = Math.round((correctCount / quiz.questions.length) * 100);
-    const passed = score >= 80;
+  // Advanced content sample
+  await prisma.lesson.create({
+    data: {
+      title: "Plant Life Cycle",
+      topic: "Nature",
+      difficulty: "ADVANCED",
+      pages: {
+        create: [
+          {
+            pageNo: 1,
+            imageUrl: "/assets/lessons/nature/lifecycle1.jpg",
+            audioUrl: "/assets/audio/nature/lifecycle1.mp3",
+            caption: "Seed to sprout.",
+          },
+          {
+            pageNo: 2,
+            imageUrl: "/assets/lessons/nature/lifecycle2.jpg",
+            audioUrl: "/assets/audio/nature/lifecycle2.mp3",
+            caption: "Sprout to plant.",
+          }
+        ],
+      },
+    },
+  });
 
-    await prisma.quizAttempt.create({
-      data: { childId, quizId, score, passed },
-    });
+  console.log("Database seeded.");
+}
 
-    // Award badge on pass
-    if (passed) {
-      await prisma.reward.create({
-        data: {
-          childId,
-          name: `Nature Star`,
-          iconUrl: "/assets/badges/star.png",
-        },
-      });
-      // Level up
-      await prisma.child.update({
-        where: { id: childId },
-        data: { unlockedLvl: { increment: 1 } },
-      });
-    }
-
-    // Near real-time
-    const elapsed = Date.now() - started;
-    res.json({ feedback, score, passed, elapsedMs: elapsed });
-  } catch (e) {
-    next(e);
-  }
+main().catch(e => {
+  console.error(e);
+  process.exit(1);
+}).finally(async () => {
+  await prisma.$disconnect();
 });
