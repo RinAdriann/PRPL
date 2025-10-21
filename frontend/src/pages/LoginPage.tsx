@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/state/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("teacher@example.com");
@@ -25,6 +25,9 @@ export default function LoginPage() {
         <button className="btn" type="submit">Login</button>
         {error && <div style={{ color: "tomato" }}>{error}</div>}
       </form>
+      <div style={{ marginTop: 12 }}>
+        New here? <Link to="/educator/register">Create an educator account</Link>
+      </div>
     </div>
   );
 }
