@@ -1,95 +1,130 @@
-import React, { useEffect, useState } from "react";
-import api from "@/services/api";
-import { useAuth } from "@/state/AuthContext";
-import { Bar, Doughnut } from "react-chartjs-2";
-import { Chart, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
-import { Link } from "react-router-dom";
-Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+import React, { useEffect, useState } from 'react';
+import api from '@/services/api';
+import { useAuth } from '@/state/AuthContext';
+import { Link } from 'react-router-dom';
 
-export default function EducatorDashboard() {
-  const { educatorId, name, logout } = useAuth();
-  const [topic, setTopic] = useState<string>("");
-  const [summary, setSummary] = useState<any>(null);
-  const [children, setChildren] = useState<any[]>([]);
+const EducatorDashboard: React.FC = () => {
+  const { user } = useAuth();
+  const isEducator = user?.role === 'educator';
+  const [lessons,setLessons] = useState<any[]>([]);
+  const [title,setTitle] = useState('');
+  const [desc,setDesc] = useState('');
+  const [err,setErr] = useState<string|null>(null);
+  const [selected,setSelected] = useState<string|null>(null);
+  const [lessonProgress,setLessonProgress] = useState<any[]>([]);
 
-  useEffect(() => {
-    async function load() {
-      const s = await api.get(`/performance/${educatorId}`, { params: { topic: topic || undefined } });
-      setSummary(s.data);
-      const c = await api.get(`/performance/${educatorId}/children`, { params: { topic: topic || undefined } });
-      setChildren(c.data.children);
-    }
-    load();
-  }, [educatorId, topic]);
+  async function loadLessons() {
+    try { setLessons(await api.lessons()); } catch(e:any){ setErr(e.message); }
+  }
+  useEffect(()=>{ loadLessons(); }, []);
 
-  if (!summary) return <div className="container">Loading...</div>;
+  async function create() {
+    if(!title.trim()) return;
+    try {
+      await api.createLesson(title.trim(), desc.trim() || undefined);
+      setTitle('');
+      setDesc('');
+      loadLessons();
+    } catch(e:any){ setErr(e.message); }
+  }
 
-  const lessons = Object.keys(summary.completionRateByLesson);
-  const rates = Object.values(summary.completionRateByLesson);
+  async function remove(id:string) {
+    try {
+      await api.deleteLesson(id);
+      if (selected===id) { setSelected(null); setLessonProgress([]); }
+      loadLessons();
+    } catch(e:any){ setErr(e.message); }
+  }
+
+  async function viewProgress(id:string) {
+    setSelected(id);
+    if (!isEducator) return;
+    try { setLessonProgress(await api.lessonProgress(id)); } catch(e:any){ setErr(e.message); }
+  }
 
   return (
-    <div className="container">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <h2>Welcome, {name}</h2>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Link to="/educator/settings" className="btn secondary">⚙️ Settings</Link>
-          <button className="btn red" onClick={logout}>Logout</button>
+    <div className="grid" style={{gap:30}}>
+      <div className="card">
+        <h2 className="section-title">Lessons</h2>
+        {err && <div className="alert">{err}</div>}
+        {isEducator && (
+          <div style={{display:'flex',gap:10,marginBottom:16}}>
+            <input
+              className="input"
+              placeholder="New lesson title"
+              value={title}
+              onChange={e=>setTitle(e.target.value)}
+            />
+            <input
+              className="input"
+              placeholder="Short description (optional)"
+              value={desc}
+              onChange={e=>setDesc(e.target.value)}
+            />
+            <button onClick={async ()=>{ await api.createLesson(title.trim(), desc.trim() || undefined); setTitle(''); setDesc(''); loadLessons(); }} disabled={!title.trim()}>Add</button>
+          </div>
+        )}
+        <div className="grid cols-3">
+          {lessons.map(l => {
+            const owned = isEducator && l.ownerId === user?.id;
+            return (
+              <div
+                key={l.id}
+                className="card"
+                style={{
+                  padding:'16px 18px',
+                  outline: owned ? '2px solid rgba(18,146,238,.35)' : undefined
+                }}
+              >
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <strong>{l.title}</strong>
+                  {owned && <span className="badge">Yours</span>}
+                </div>
+                <p className="muted" style={{margin:'8px 0'}}>Quick intro to {l.title.toLowerCase()}.</p>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  {owned ? (
+                    <>
+                      <Link to={`/lesson/${l.id}`}><button style={{flex:1}}>Open</button></Link>
+                      <button onClick={()=>viewProgress(l.id)} style={{background:'#0b8f6e'}}>Manage</button>
+                      <button onClick={()=>remove(l.id)} style={{background:'#d64848'}}>Delete</button>
+                    </>
+                  ) : (
+                    <Link to={`/lessons/${l.id}`}><button style={{flex:1}}>Details</button></Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
+        {lessons.length===0 && <p className="muted">No lessons yet.</p>}
       </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <label>Filter by topic: </label>
-        <select value={topic} onChange={e => setTopic(e.target.value)} style={{ padding: 8, borderRadius: 8, border: "1px solid #ccc" }}>
-          <option value="">All</option>
-          <option value="Nature">Nature</option>
-        </select>
-      </div>
-
-      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "1fr 1fr" }}>
-        <div style={{ background: "#fff", borderRadius: 12, padding: 12 }}>
-          <h3>Average Quiz Score</h3>
-          <Doughnut data={{
-            labels: ["Average", "Remaining"],
-            datasets: [{ data: [summary.averageQuizScore, 100 - summary.averageQuizScore], backgroundColor: ["#4caf50", "#e0e0e0"] }]
-          }} />
+      {selected && (
+        <div className="card">
+          <h2 className="section-title">Lesson Progress</h2>
+          {!isEducator && <p className="muted">Login as educator to view user progress.</p>}
+          {isEducator && (
+            <>
+              {lessonProgress.length===0 && <p className="muted">No progress recorded.</p>}
+              {lessonProgress.length>0 && (
+                <table className="table">
+                  <thead><tr><th>User ID</th><th>Percent</th></tr></thead>
+                  <tbody>
+                    {lessonProgress.map(p=>(
+                      <tr key={p.id}>
+                        <td>{p.userId}</td>
+                        <td>{p.percent}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
         </div>
-        <div style={{ background: "#fff", borderRadius: 12, padding: 12 }}>
-          <h3>Completion Rate by Lesson</h3>
-          <Bar data={{
-            labels: lessons,
-            datasets: [{ label: "% Completed", data: rates, backgroundColor: "#42a5f5" }]
-          }} options={{ scales: { y: { suggestedMax: 100 } } }} />
-        </div>
-      </div>
-
-      <div style={{ marginTop: 16, background: "#fff", borderRadius: 12, padding: 12 }}>
-        <h3>Children Performance</h3>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={th}>Child</th>
-                <th style={th}>Avg Score</th>
-                <th style={th}>Attempts</th>
-                <th style={th}>Lessons Completed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {children.map((c) => (
-                <tr key={c.childId}>
-                  <td style={td}>{c.name}</td>
-                  <td style={td}>{c.avgScore}%</td>
-                  <td style={td}>{c.attempts}</td>
-                  <td style={td}>{c.completedLessons}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
     </div>
   );
-}
+};
 
-const th: React.CSSProperties = { textAlign: "left", borderBottom: "1px solid #eee", padding: 8 };
-const td: React.CSSProperties = { borderBottom: "1px solid #f5f5f5", padding: 8 };
+export default EducatorDashboard;

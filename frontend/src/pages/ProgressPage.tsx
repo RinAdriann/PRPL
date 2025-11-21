@@ -1,59 +1,79 @@
 import React, { useEffect, useState } from "react";
 import api from "@/services/api";
-import ProgressMap from "@/components/ProgressMap";
-import { useChild } from "@/state/ChildContext";
+import { useAuth } from "@/state/AuthContext";
 
-type Reward = { id: number; name: string; iconUrl: string };
+type ProgressItem = {
+  id: string;
+  percent: number;
+  lessonId: string;
+  lesson?: { id: string; title: string };
+};
 
-function starDataUrl() {
-  const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#ffd54f"/>
-        <stop offset="100%" stop-color="#ffb300"/>
-      </linearGradient>
-    </defs>
-    <polygon points="32,4 39,24 60,24 43,36 50,56 32,44 14,56 21,36 4,24 25,24" fill="url(#g)" stroke="#ff8f00" stroke-width="2"/>
-  </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-export default function ProgressPage() {
-  const [rewards, setRewards] = useState<Reward[]>([]);
-  const [unlockedLvl, setUnlockedLvl] = useState<number>(1);
-  const { childId } = useChild();
+const ProgressPage: React.FC = () => {
+  const { user } = useAuth();
+  const [items, setItems] = useState<ProgressItem[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function load() {
-      const res = await api.post("/progress/update", { childId });
-      setRewards(res.data.rewards);
-      setUnlockedLvl(res.data.unlockedLvl);
-    }
-    load();
-  }, [childId]);
+    if (!user) return;
+    setLoading(true);
+    api
+      .myProgress()
+      .then((list: ProgressItem[]) => setItems(list))
+      .catch((e) => setErr(e.message))
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  if (!user)
+    return (
+      <div className="card" style={{ maxWidth: 520 }}>
+        <p>Login or guest to view tracked progress.</p>
+      </div>
+    );
 
   return (
-    <div className="container">
-      <h2>Your Progress</h2>
-      <h3>Badges</h3>
-      <div className="badges">
-        {rewards.map(r => (
-          <div className="badge" key={r.id}>
-            <img
-              src={r.iconUrl}
-              alt={r.name}
-              width={28}
-              height={28}
-              onError={(e) => { e.currentTarget.src = starDataUrl(); }}
-            />
-            <span>{r.name}</span>
-          </div>
-        ))}
-        {rewards.length === 0 && <div>No badges yet. Keep going! 💪</div>}
+    <div className="card">
+      <h2 style={{ marginTop: 0 }}>My Progress</h2>
+      {err && <div className="alert">{err}</div>}
+      {loading && <p className="muted">Loading...</p>}
+      {!loading && items.length === 0 && (
+        <p className="muted">No progress yet.</p>
+      )}
+
+      <div className="grid" style={{ gap: 14 }}>
+        {items.map((p) => {
+          const pct = Math.max(0, Math.min(100, Math.round(p.percent)));
+          const title = p.lesson?.title || p.lessonId;
+          return (
+            <div
+              key={p.id}
+              className="card"
+              style={{ padding: "14px 16px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 8,
+                }}
+              >
+                <strong>{title}</strong>
+                <span className="muted">{pct}%</span>
+              </div>
+              <div className="progress">
+                <div
+                  className="progress__bar"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <h3 style={{ marginTop: 16 }}>Adventure Map</h3>
-      <ProgressMap unlockedLvl={unlockedLvl} />
     </div>
   );
-}
+};
+
+export default ProgressPage;

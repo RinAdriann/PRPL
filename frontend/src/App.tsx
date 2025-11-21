@@ -1,38 +1,47 @@
-import { Routes, Route, Navigate, Link } from "react-router-dom";
-import ChildHub from "./pages/ChildHub";
-import LessonPlayer from "./pages/LessonPlayer";
-import QuizPage from "./pages/QuizPage";
-import ProgressPage from "./pages/ProgressPage";
-import LoginPage from "./pages/LoginPage";
-import EducatorDashboard from "./pages/EducatorDashboard";
-import SettingsPage from "./pages/SettingsPage";
-import RegisterPage from "./pages/RegisterPage";
-import { useAuth } from "./state/AuthContext";
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import { useAuth } from './state/AuthContext';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import EducatorDashboard from './pages/EducatorDashboard';
+import LessonPlayer from './pages/LessonPlayer';
+import ProgressPage from './pages/ProgressPage';
+import HomePage from './pages/HomePage';
+import LessonDetails from './pages/LessonDetails';
 
-export default function App() {
-  const { token } = useAuth();
+const App: React.FC = () => {
+  const { user, loading, logout, guestLogin } = useAuth();
 
   return (
-    <div className="app-root">
-      <header className="app-header">
-        <Link to="/" className="brand">EduVillage</Link>
+    <>
+      <header className="header">
+        <div className="brand">EduVillage</div>
         <nav className="nav">
-          <Link to="/">🏠</Link>
-          <Link to="/progress">⭐</Link>
-          <Link to="/educator/login">👩‍🏫</Link>
+          <Link to="/">Home</Link>
+          <Link to="/dashboard">Lessons</Link>
+          {user && <Link to="/progress">My Progress</Link>}
+          {!user && <button onClick={guestLogin}>Guest</button>}
+          {!user && <Link to="/login">Login</Link>}
+          {!user && <Link to="/register">Register</Link>}
+          {user && <button onClick={logout}>Logout</button>}
         </nav>
       </header>
-
-      <Routes>
-        <Route path="/" element={<ChildHub />} />
-        <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
-        <Route path="/quiz/:quizId" element={<QuizPage />} />
-        <Route path="/progress" element={<ProgressPage />} />
-        <Route path="/educator/login" element={<LoginPage />} />
-        <Route path="/educator/register" element={<RegisterPage />} />
-        <Route path="/educator/dashboard" element={token ? <EducatorDashboard /> : <Navigate to="/educator/login" />} />
-        <Route path="/educator/settings" element={token ? <SettingsPage /> : <Navigate to="/educator/login" />} />
-      </Routes>
-    </div>
+      <main className="layout">
+        {loading ? <p className="muted">Loading session...</p> : (
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/dashboard" element={<EducatorDashboard />} />
+            <Route path="/lessons/:id" element={<LessonDetails />} />
+            <Route path="/lesson/:id" element={<LessonPlayer />} />
+            <Route path="/progress" element={<ProgressPage />} />
+          </Routes>
+        )}
+      </main>
+      <div className="footer">© {new Date().getFullYear()} EduVillage</div>
+    </>
   );
-}
+};
+
+export default App;

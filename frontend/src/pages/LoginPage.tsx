@@ -2,36 +2,92 @@ import React, { useState } from "react";
 import { useAuth } from "@/state/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("teacher@example.com");
-  const [password, setPassword] = useState("password123");
-  const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
+const LoginPage: React.FC = () => {
+  const { login, guestLogin } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const ok = await login(email, password);
-    if (!ok) setError("Access Denied");
-    else navigate("/educator/dashboard");
+    setErr(null);
+    setLoading(true);
+    try {
+      await login(email, password);
+      navigate("/educator/dashboard");
+    } catch (ex: any) {
+      setErr(ex.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function guest() {
+    setErr(null);
+    setLoading(true);
+    try {
+      await guestLogin();
+      navigate("/educator/dashboard");
+    } catch (ex: any) {
+      setErr(ex.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="container" style={{ maxWidth: 420, margin: "0 auto" }}>
-      <h2>Educator Login</h2>
-      <form onSubmit={submit} style={{ display: "grid", gap: 12 }}>
-        <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
-        <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
-        <button className="btn" type="submit">Login</button>
-        {error && <div style={{ color: "tomato" }}>{error}</div>}
+    <div className="card" style={{ maxWidth: 420 }}>
+      <h2 style={{ marginTop: 0 }}>Login</h2>
+      <p className="muted" style={{ marginTop: -6 }}>
+        Educators get management privileges. Guests can track personal progress
+        only.
+      </p>
+      {err && (
+        <div className="alert" style={{ marginBottom: 14 }}>
+          {err}
+        </div>
+      )}
+      <form
+        onSubmit={submit}
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <input
+          className="input"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          className="input"
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit" disabled={loading || !email || !password}>
+          {loading ? "..." : "Login"}
+        </button>
       </form>
-      <div style={{ marginTop: 12 }}>
-        New here? <Link to="/educator/register">Create an educator account</Link>
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
+        <button
+          onClick={guest}
+          disabled={loading}
+          style={{ background: "#555" }}
+        >
+          {loading ? "..." : "Login as Guest"}
+        </button>
       </div>
     </div>
   );
-}
-
-const inputStyle: React.CSSProperties = {
-  padding: 12, borderRadius: 8, border: "2px solid #cfd8dc", fontSize: 16, outline: "none"
 };
+
+export default LoginPage;

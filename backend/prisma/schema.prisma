@@ -1,134 +1,39 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// SQLite-safe schema notes:
-// - “Enums” are modeled as String fields (e.g., role: "CHILD" | "EDUCATOR")
-// - JSON is stored as String, and the API parses/serializes at the boundary
+generator client {
+  provider = "prisma-client-js"
+}
 
 model User {
-  id           Int       @id @default(autoincrement())
-  role         String // "CHILD" | "EDUCATOR"
-  email        String?   @unique
-  passwordHash String?
-  name         String
-  createdAt    DateTime  @default(now())
-  educator     Educator?
-  child        Child?
-}
-
-model Educator {
-  id                Int          @id @default(autoincrement())
-  userId            Int          @unique
-  user              User         @relation(fields: [userId], references: [id])
-  defaultDifficulty String       @default("BASIC")
-  children          Enrollment[]
-  classrooms        Classroom[]
-}
-
-model Classroom {
-  id          Int          @id @default(autoincrement())
-  educatorId  Int
-  name        String
-  educator    Educator     @relation(fields: [educatorId], references: [id])
-  enrollments Enrollment[]
-}
-
-model Child {
-  id           Int           @id @default(autoincrement())
-  userId       Int           @unique
-  user         User          @relation(fields: [userId], references: [id])
-  avatar       String?
-  enrollments  Enrollment[]
-  progress     Progress[]
-  quizAttempts QuizAttempt[]
-  rewards      Reward[]
-  unlockedLvl  Int           @default(1)
-}
-
-model Enrollment {
-  id          Int        @id @default(autoincrement())
-  educatorId  Int
-  childId     Int
-  classroomId Int?
-  educator    Educator   @relation(fields: [educatorId], references: [id])
-  child       Child      @relation(fields: [childId], references: [id])
-  classroom   Classroom? @relation(fields: [classroomId], references: [id])
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("educator") // educator | guest | child ...
+  createdAt DateTime @default(now())
+  lessons   Lesson[]
+  progress  Progress[]
 }
 
 model Lesson {
-  id         Int          @id @default(autoincrement())
-  title      String
-  topic      String
-  difficulty String // "BASIC" | "ADVANCED"
-  pages      LessonPage[]
-  quiz       Quiz?
-  progress   Progress[]
-}
-
-model LessonPage {
-  id       Int     @id @default(autoincrement())
-  lessonId Int
-  pageNo   Int
-  imageUrl String
-  audioUrl String
-  caption  String?
-  lesson   Lesson  @relation(fields: [lessonId], references: [id])
-}
-
-model Quiz {
-  id         Int            @id @default(autoincrement())
-  lessonId   Int?           @unique // one-to-one (optional) with Lesson
-  topic      String
-  difficulty String
-  questions  QuizQuestion[]
-  lesson     Lesson?        @relation(fields: [lessonId], references: [id])
-  attempts   QuizAttempt[]
-}
-
-model QuizQuestion {
-  id        Int    @id @default(autoincrement())
-  quizId    Int
-  type      String // "MATCHING"
-  prompt    String
-  items     String // JSON string of { items: Array<{key,label}> }
-  targets   String // JSON string of { targets: Array<{key,label}> }
-  answerMap String // JSON string of Record<itemKey, targetKey>
-  quiz      Quiz   @relation(fields: [quizId], references: [id])
+  id        String    @id @default(cuid())
+  title     String
+  description String?   // short explanation
+  ownerId   String?
+  owner     User?     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime  @default(now())
+  progress  Progress[]
 }
 
 model Progress {
-  id          Int       @id @default(autoincrement())
-  childId     Int
-  lessonId    Int
-  completed   Boolean   @default(false)
-  completedAt DateTime?
-  child       Child     @relation(fields: [childId], references: [id])
-  lesson      Lesson    @relation(fields: [lessonId], references: [id])
-
-  @@unique([childId, lessonId], name: "childId_lessonId")
-}
-
-model QuizAttempt {
-  id        Int      @id @default(autoincrement())
-  childId   Int
-  quizId    Int
-  score     Int
-  passed    Boolean
-  createdAt DateTime @default(now())
-  child     Child    @relation(fields: [childId], references: [id])
-  quiz      Quiz     @relation(fields: [quizId], references: [id])
-}
-
-model Reward {
-  id      Int    @id @default(autoincrement())
-  childId Int
-  name    String
-  iconUrl String
-  child   Child  @relation(fields: [childId], references: [id])
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  percent   Int      @default(0)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields:[userId], references:[id])
+  lesson    Lesson   @relation(fields:[lessonId], references:[id])
+  @@unique([userId, lessonId])
 }

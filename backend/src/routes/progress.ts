@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../prisma.js";
+import { auth } from "../middleware/auth.js";
 
 export const progressRouter = Router();
 
@@ -41,4 +42,39 @@ progressRouter.post("/update", async (req, res, next) => {
   } catch (e) {
     next(e);
   }
+});
+
+// Update or create own progress
+progressRouter.post("/", auth, async (req: any, res) => {
+  const { lessonId, percent } = req.body;
+  if (!lessonId || percent == null) return res.status(400).json({ error: "Missing fields" });
+  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
+  if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+  const data = await prisma.progress.upsert({
+    where: { userId_lessonId: { userId: req.user.id, lessonId } },
+    update: { percent },
+    create: { userId: req.user.id, lessonId, percent },
+  });
+  res.json(data);
+});
+
+// List own progress
+progressRouter.get("/mine", auth, async (req: any, res) => {
+  const list = await prisma.progress.findMany({
+    where: { userId: req.user.id },
+    include: { lesson: { select: { id: true, title: true } } },
+    orderBy: { updatedAt: 'desc' }
+  });
+  res.json(list);
+});
+
+// Educator view progress for their lesson
+progressRouter.get("/lesson/:lessonId", auth, async (req: any, res) => {
+  if (req.user.role !== "educator") return res.status(403).json({ error: "Educator only" });
+  const { lessonId } = req.params;
+  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
+  if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+  if (lesson.ownerId !== req.user.id) return res.status(403).json({ error: "Not owner" });
+  const list = await prisma.progress.findMany({ where: { lessonId } });
+  res.json(list);
 });

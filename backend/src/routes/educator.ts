@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../prisma.js";
-import { requireEducator } from "../middleware/auth.js";
+import { requireEducator, auth } from "../middleware/auth.js";
 
 export const educatorRouter = Router();
 
@@ -52,4 +52,9 @@ educatorRouter.get("/:educatorId/classes", requireEducator, async (req, res, nex
   } catch (e) {
     next(e);
   }
+});
+
+educatorRouter.get('/children', auth, requireEducator, async (req, res) => {
+  const children = await prisma.child.findMany();
+  res.json(children);
 });
