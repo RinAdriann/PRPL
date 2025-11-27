@@ -4,7 +4,6 @@ import { Router } from "express";
 import { prisma } from "../db.js";
 import { requireAuth as auth } from "../middleware/auth.js";
 
-const prisma = new PrismaClient();
 const router = Router();
 
 async function main() {
@@ -34,8 +33,8 @@ async function main() {
   // Enroll child
   await prisma.enrollment.create({
     data: {
-      educatorId: eduUser.educator!.id,
-      childId: childUser.child!.id,
+      educatorId: eduUser.educator.id,
+      childId: childUser.child.id,
     },
   });
 
@@ -136,6 +135,19 @@ router.post("/", auth, async (req, res) => {
     const { title, questions, lessonId, topic, difficulty } = req.body || {};
     if (!title || !questions) return res.status(400).json({ error: "title and questions are required" });
 
+    // Example: derive educatorId from authenticated user (adjust to your auth shape)
+    // Assuming req.user.id is a user id referencing an educator record
+    let educatorId = null;
+    if (req.user?.id) {
+      const eduUser = await prisma.educator.findFirst({
+        where: { userId: String(req.user.id) }
+      });
+      if (!eduUser || !eduUser.id) {
+        return res.status(403).json({ error: "Educator context not found" });
+      }
+      educatorId = eduUser.id;
+    }
+
     const quiz = await prisma.quiz.create({
       data: {
         title,
@@ -143,6 +155,7 @@ router.post("/", auth, async (req, res) => {
         topic: topic ?? null,
         difficulty: difficulty ?? null,
         lessonId: lessonId ?? null,
+        educatorId // include only if schema has this field
       },
     });
 

@@ -22,12 +22,9 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
@@ -35,7 +32,6 @@ app.use(
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// Mount routers
 app.use("/educator", educatorRouter);
 app.use("/performance", performanceRouter);
 app.use("/progress", progressRouter);
@@ -43,6 +39,3 @@ app.use("/quizzes", quizzesRouter);
 app.use("/lessons", lessonsRouter);
 
 export default app;
-{
-  "engines": { "node": ">=18" }
-}

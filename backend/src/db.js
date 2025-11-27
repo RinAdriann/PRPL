@@ -1,2 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-export const prisma = new PrismaClient();
+
+const globalAny = globalThis;
+
+export const prisma =
+  globalAny.__prisma || (globalAny.__prisma = new PrismaClient());
