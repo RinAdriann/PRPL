@@ -44,7 +44,9 @@ export default function QuizPage() {
     load();
   }, [quizId]);
 
-  if (!quiz) return <div>Loading...</div>;
+  // guard null quiz before render
+  if (!quiz) return <div>Loading...</div>
+  // after this check quiz is non-null
 
   function onChangeMapping(qId: number, map: Mapping) {
     setMappings(prev => ({ ...prev, [qId]: map }));

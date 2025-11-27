@@ -3,7 +3,7 @@ const API_BASE = import.meta.env.VITE_API_URL || window.location.origin
 async function request(path: string, options: RequestInit = {}) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {})
+    ...(options.headers ? options.headers as Record<string, string> : {})
   }
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)

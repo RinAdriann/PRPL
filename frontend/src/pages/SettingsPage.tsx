@@ -15,11 +15,12 @@ export default function SettingsPage() {
     load();
   }, [educatorId]);
 
-  async function save() {
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
     setSaving(true);
     await api.post(`/educator/${educatorId}/settings`, { defaultDifficulty: difficulty });
     setSaving(false);
-  }
+  };
 
   return (
     <div className="container" style={{ maxWidth: 480 }}>

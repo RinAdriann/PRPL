@@ -29,7 +29,7 @@ const HomePage: React.FC = () => {
       <div className="card">
         <h2 className="section-title">Featured lessons</h2>
         <div className="grid cols-3">
-          {featured.map(l => (
+          {featured.map((l: any) => (
             <div key={l.id} className="card" style={{padding:'14px 16px'}}>
               <strong>{l.title}</strong>
               <p className="muted" style={{margin:'8px 0 12px'}}>Quick intro to {l.title.toLowerCase()}.</p>
