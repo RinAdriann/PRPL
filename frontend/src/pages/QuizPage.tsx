@@ -22,7 +22,7 @@ type Quiz = {
 
 export default function QuizPage() {
   const { quizId } = useParams();
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [quiz, setQuiz] = useState<any | null>(null)
   const [mappings, setMappings] = useState<Record<number, Mapping>>({});
   const [feedback, setFeedback] = useState<Record<number, boolean | null>>({});
   const [finished, setFinished] = useState<{ score: number; passed: boolean } | null>(null);
@@ -45,8 +45,7 @@ export default function QuizPage() {
   }, [quizId]);
 
   // guard null quiz before render
-  if (!quiz) return <div>Loading quiz...</div>
-  // after this, quiz is non-null
+  if (!quiz) return null
 
   function onChangeMapping(qId: number, map: Mapping) {
     setMappings(prev => ({ ...prev, [qId]: map }));
@@ -66,20 +65,7 @@ export default function QuizPage() {
 
   const submitAnswers = async () => {
     if (!quiz) return
-    try {
-      const payload = {
-        childId,
-        quizId: Number(quizId),
-        answers: quiz.questions.map(q => ({ questionId: q.id, mapping: mappings[q.id] || {} })),
-      };
-      const res = await api.post("/quizzes/submit", payload);
-      setFinished({ score: res.data.score, passed: res.data.passed });
-      if (res.data.passed) {
-        setTimeout(() => navigate("/progress"), 1500);
-      }
-    } catch {
-      alert("Submission failed");
-    }
+    await api.submitQuiz(quiz.id, {/* ... */})
   }
 
   const allAnswered = quiz.questions.every(q => feedback[q.id] !== null && mappings[q.id] && Object.keys(mappings[q.id]).length >= Object.keys(q.answerMap).length);
