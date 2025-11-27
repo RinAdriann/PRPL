@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "@/services/api";
+import { api } from '@/services/api'
 import DragDropQuiz, { Mapping } from "@/components/DragDropQuiz";
 import { useChild } from "@/state/ChildContext";
 
@@ -46,7 +46,7 @@ export default function QuizPage() {
 
   // guard null quiz before render
   if (!quiz) return <div>Loading...</div>
-  // after this check quiz is non-null
+  // after this guard quiz is non-null
 
   function onChangeMapping(qId: number, map: Mapping) {
     setMappings(prev => ({ ...prev, [qId]: map }));

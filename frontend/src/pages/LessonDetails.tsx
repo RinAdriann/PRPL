@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import api from '@/services/api';
+import { api } from '@/services/api';
 import { enroll, isEnrolled, unenroll } from '@/services/enrollment';
 import { useAuth } from '@/state/AuthContext';
 
@@ -26,6 +26,11 @@ const LessonDetails: React.FC = () => {
   function doUnenroll() {
     unenroll(id);
     setLesson({ ...lesson });
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // ...existing code...
   }
 
   if (err) return <div className="card"><p className="alert">{err}</p></div>;

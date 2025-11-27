@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '@/services/api';
+import { api } from '@/services/api';
 import { useAuth } from '@/state/AuthContext';
 
 type Lesson = { id: string; title: string; description?: string | null; audioUrl?: string | null; imageUrl?: string | null };

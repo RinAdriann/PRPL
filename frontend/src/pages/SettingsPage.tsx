@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "@/services/api";
+import { api } from "@/services/api";
 import { useAuth } from "@/state/AuthContext";
 
 export default function SettingsPage() {
@@ -15,7 +15,7 @@ export default function SettingsPage() {
     load();
   }, [educatorId]);
 
-  const save = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     await api.post(`/educator/${educatorId}/settings`, { defaultDifficulty: difficulty });
@@ -33,7 +33,7 @@ export default function SettingsPage() {
             <option value="ADVANCED">Advanced</option>
           </select>
         </label>
-        <button className="btn" onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</button>
+        <button className="btn" onClick={onSubmit} disabled={saving}>{saving ? "Saving..." : "Save"}</button>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "@/services/api";
+import { api } from "@/services/api";
 import { useAuth } from "@/state/AuthContext";
 
 type ProgressItem = {
@@ -24,6 +24,11 @@ const ProgressPage: React.FC = () => {
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));
   }, [user]);
+
+  const handleFilter = (e: React.FormEvent) => {
+    e.preventDefault();
+    // ...existing code...
+  };
 
   if (!user)
     return (
