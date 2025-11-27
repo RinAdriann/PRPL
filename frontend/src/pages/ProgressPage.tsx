@@ -26,8 +26,7 @@ const ProgressPage: React.FC = () => {
   }, [user]);
 
   const handleFilter = (e: React.FormEvent) => {
-    e.preventDefault();
-    // ...existing code...
+    e.preventDefault()
   };
 
   if (!user)

@@ -44,7 +44,11 @@ const LessonPlayer: React.FC = () => {
   function clamp(n:number){ return Math.max(0, Math.min(100, Math.round(n))); }
   async function saveProgress(percent: number) {
     if (!user) return alert('Login (or guest) to save progress.');
-    try { await api.updateProgress(id, clamp(percent)); } catch {} 
+    try { 
+      const position = clamp(percent);
+      const completed = percent === 100;
+      await api.updateProgress(lesson.id, { position, completed }); 
+    } catch {} 
   }
 
   if (err) return <div className="card"><p className="alert">{err}</p></div>;

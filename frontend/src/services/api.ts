@@ -1,9 +1,9 @@
 const API_BASE = import.meta.env.VITE_API_URL || window.location.origin
 
 async function request(path: string, options: RequestInit = {}) {
-  const headers: Record<string, string> = {
+  const headers: Record<string,string> = {
     'Content-Type': 'application/json',
-    ...(options.headers ? options.headers as Record<string, string> : {})
+    ...(options.headers ? options.headers as Record<string,string> : {})
   }
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -12,8 +12,22 @@ async function request(path: string, options: RequestInit = {}) {
 
 export const api = {
   get: (path: string) => request(path),
-  post: (path: string, body: any) =>
-    request(path, { method: 'POST', body: JSON.stringify(body) }),
-  put: (path: string, body: any) =>
-    request(path, { method: 'PUT', body: JSON.stringify(body) })
+  post: (path: string, body: any) => request(path, { method: 'POST', body: JSON.stringify(body) }),
+  put: (path: string, body: any) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (path: string) => request(path, { method: 'DELETE' }),
+
+  // Added domain helpers:
+  lessons: () => request('/lessons'),
+  getLesson: (id: string) => request(`/lessons/${id}`),
+  createLesson: (data: any) => request('/lessons', { method: 'POST', body: JSON.stringify(data) }),
+  deleteLesson: (id: string) => request(`/lessons/${id}`, { method: 'DELETE' }),
+
+  lessonProgress: (lessonId: string) => request(`/progress/lesson/${lessonId}`),
+  updateProgress: (lessonId: string, data: any) =>
+    request(`/progress/lesson/${lessonId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  myProgress: () => request('/progress/my'),
+
+  getQuiz: (lessonId: string) => request(`/quizzes/${lessonId}`),
+  submitQuiz: (quizId: string, payload: any) =>
+    request(`/quizzes/${quizId}/submit`, { method: 'POST', body: JSON.stringify(payload) })
 }

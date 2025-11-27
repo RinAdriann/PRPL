@@ -30,7 +30,6 @@ const LessonDetails: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // ...existing code...
   }
 
   if (err) return <div className="card"><p className="alert">{err}</p></div>;

@@ -21,7 +21,7 @@ const EducatorDashboard: React.FC = () => {
   async function create() {
     if(!title.trim()) return;
     try {
-      await api.createLesson(title.trim(), desc.trim() || undefined);
+      await api.createLesson({ title, description: desc.trim() || undefined });
       setTitle('');
       setDesc('');
       loadLessons();
@@ -61,7 +61,7 @@ const EducatorDashboard: React.FC = () => {
               value={desc}
               onChange={e=>setDesc(e.target.value)}
             />
-            <button onClick={async ()=>{ await api.createLesson(title.trim(), desc.trim() || undefined); setTitle(''); setDesc(''); loadLessons(); }} disabled={!title.trim()}>Add</button>
+            <button onClick={async ()=>{ await api.createLesson({ title, description: desc.trim() || undefined }); setTitle(''); setDesc(''); loadLessons(); }} disabled={!title.trim()}>Add</button>
           </div>
         )}
         <div className="grid cols-3">
