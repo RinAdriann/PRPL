@@ -2,20 +2,20 @@
   "name": "eduvillage-backend",
   "version": "1.0.0",
   "type": "module",
+  "engines": { "node": "20.x" },
   "scripts": {
     "dev": "node src/server.js",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy"
   },
-  "engines": { "node": "22.x" },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.0",
-    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
     "@prisma/client": "5.22.0"
   },
   "devDependencies": {

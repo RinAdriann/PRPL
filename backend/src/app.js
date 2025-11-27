@@ -20,6 +20,7 @@ app.use(morgan("dev"));
 app.use(cors({ origin: true, credentials: true }));
 
 app.get("/", (_req, res) => res.json({ ok: true, service: "PRPL Backend" }));
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/auth", authRouter);
 app.use("/educator", educatorRouter);
