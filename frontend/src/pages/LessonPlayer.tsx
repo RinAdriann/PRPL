@@ -52,7 +52,7 @@ const LessonPlayer: React.FC = () => {
   }
 
   if (err) return <div className="card"><p className="alert">{err}</p></div>;
-  if (loading || !lesson) return <div className="card"><p className="muted">Loading lesson...</p></div>;
+  if (loading || !lesson) return <div>Loading lesson...</div>
 
   const hasAudio = !!lesson.audioUrl;
   const hasImage = !!lesson.imageUrl;

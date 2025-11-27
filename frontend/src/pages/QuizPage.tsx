@@ -45,8 +45,8 @@ export default function QuizPage() {
   }, [quizId]);
 
   // guard null quiz before render
-  if (!quiz) return <div>Loading...</div>
-  // after this guard quiz is non-null
+  if (!quiz) return <div>Loading quiz...</div>
+  // after this, quiz is non-null
 
   function onChangeMapping(qId: number, map: Mapping) {
     setMappings(prev => ({ ...prev, [qId]: map }));
@@ -64,7 +64,8 @@ export default function QuizPage() {
     }
   }
 
-  async function submit() {
+  const submitAnswers = async () => {
+    if (!quiz) return
     try {
       const payload = {
         childId,
@@ -101,7 +102,7 @@ export default function QuizPage() {
         </div>
       ))}
       <div className="controls">
-        <button className="btn green" onClick={submit} disabled={!allAnswered}>Finish Quiz</button>
+        <button className="btn green" onClick={submitAnswers} disabled={!allAnswered}>Finish Quiz</button>
       </div>
 
       {finished && (

@@ -15,19 +15,20 @@ export const api = {
   post: (path: string, body: any) => request(path, { method: 'POST', body: JSON.stringify(body) }),
   put: (path: string, body: any) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (path: string) => request(path, { method: 'DELETE' }),
-
-  // Added domain helpers:
+  // lessons
   lessons: () => request('/lessons'),
   getLesson: (id: string) => request(`/lessons/${id}`),
   createLesson: (data: any) => request('/lessons', { method: 'POST', body: JSON.stringify(data) }),
   deleteLesson: (id: string) => request(`/lessons/${id}`, { method: 'DELETE' }),
-
+  // progress
   lessonProgress: (lessonId: string) => request(`/progress/lesson/${lessonId}`),
   updateProgress: (lessonId: string, data: any) =>
     request(`/progress/lesson/${lessonId}`, { method: 'PUT', body: JSON.stringify(data) }),
   myProgress: () => request('/progress/my'),
-
+  // quizzes
   getQuiz: (lessonId: string) => request(`/quizzes/${lessonId}`),
   submitQuiz: (quizId: string, payload: any) =>
-    request(`/quizzes/${quizId}/submit`, { method: 'POST', body: JSON.stringify(payload) })
+    request(`/quizzes/${quizId}/submit`, { method: 'POST', body: JSON.stringify(payload) }),
+  // educator
+  educatorChildren: (educatorId: string) => request(`/educator/${educatorId}/children`)
 }

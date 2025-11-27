@@ -11,7 +11,7 @@ const ChildHub: React.FC = () => {
     async function load() {
       if (!user) return;
       try {
-        const data = await api.educatorChildren();
+        const data = await api.educatorChildren(user.id);
         setChildren(data);
       } catch (e: any) {
         setErr(e.message);
