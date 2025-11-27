@@ -26,7 +26,17 @@ export const api = {
     request(`/progress/lesson/${lessonId}`, { method: 'PUT', body: JSON.stringify(data) }),
   myProgress: () => request('/progress/my'),
   // quizzes
-  getQuiz: (lessonId: string) => request(`/quizzes/${lessonId}`),
+  getQuiz: async (lessonId: string) => {
+    const data = await request(`/quizzes/${lessonId}`)
+    // normalize questions so answerMap exists
+    if (Array.isArray(data?.questions)) {
+      data.questions = data.questions.map((q: any) => ({
+        ...q,
+        answerMap: q.answerMap ?? {},  // ensure object
+      }))
+    }
+    return data
+  },
   submitQuiz: (quizId: string, payload: any) =>
     request(`/quizzes/${quizId}/submit`, { method: 'POST', body: JSON.stringify(payload) }),
   // educator

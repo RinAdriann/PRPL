@@ -10,10 +10,8 @@ type Question = {
   id: string
   text: string
   choices: Choice[]
-  // if you store answers keyed by something, type it explicitly:
-  answerMap?: Record<string, string>  // key -> selectedChoiceId
-  // or a single selected answer:
   selected?: string
+  answerMap: Record<string, string>
 }
 type Quiz = { id: string; title: string; questions: Question[] }
 
@@ -41,7 +39,7 @@ const QuizPage: React.FC = () => {
     load();
   }, [quizId]);
 
-  // Guard before render
+  // Guard before any access
   if (!quiz) return null
 
   function onChangeMapping(qId: number, map: Mapping) {
