@@ -44,7 +44,7 @@ export default function QuizPage() {
     load();
   }, [quizId]);
 
-  // guard null quiz before render
+  // Guard before render
   if (!quiz) return null
 
   function onChangeMapping(qId: number, map: Mapping) {
@@ -63,9 +63,10 @@ export default function QuizPage() {
     }
   }
 
+  // Guard in actions
   const submitAnswers = async () => {
     if (!quiz) return
-    await api.submitQuiz(quiz.id, {/* ... */})
+    await api.submitQuiz(quiz.id, {/* payload */})
   }
 
   const allAnswered = quiz.questions.every(q => feedback[q.id] !== null && mappings[q.id] && Object.keys(mappings[q.id]).length >= Object.keys(q.answerMap).length);

@@ -8,7 +8,7 @@ type Lesson = { id: string; title: string; description?: string | null; audioUrl
 const LessonPlayer: React.FC = () => {
   const { id = '' } = useParams();
   const { user } = useAuth();
-  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [lesson, setLesson] = useState<any | null>(null)
   const [loading, setLoading] = useState(true);
   const [mediaReady, setMediaReady] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -47,7 +47,14 @@ const LessonPlayer: React.FC = () => {
     try { 
       const position = clamp(percent);
       const completed = percent === 100;
-      await api.updateProgress(lesson.id, { position, completed }); 
+      // Guard before any access in render
+      if (!lesson) return
+      // Guard inside handlers too (TS doesn’t narrow across closures)
+      const handleProgressUpdate = async (position: number, completed: boolean) => {
+        if (!lesson) return
+        await api.updateProgress(lesson.id, { position, completed })
+      }
+      await handleProgressUpdate(position, completed)
     } catch {} 
   }
 
