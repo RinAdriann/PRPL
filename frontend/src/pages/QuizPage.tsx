@@ -4,25 +4,13 @@ import { api } from '@/services/api'
 import DragDropQuiz, { Mapping } from "@/components/DragDropQuiz";
 import { useChild } from "@/state/ChildContext";
 
-type Question = {
-  id: number;
-  type: "MATCHING";
-  prompt: string;
-  items: { items: { key: string; label: string }[] };
-  targets: { targets: { key: string; label: string }[] };
-  answerMap: Record<string, string>;
-};
-
-type Quiz = {
-  id: number;
-  topic: string;
-  difficulty: string;
-  questions: Question[];
-};
+type Choice = { id: string; text: string; correct?: boolean }
+type Question = { id: string; text: string; choices: Choice[]; selected?: string }
+type Quiz = { id: string; title: string; questions: Question[] }
 
 export default function QuizPage() {
   const { quizId } = useParams();
-  const [quiz, setQuiz] = useState<any | null>(null)
+  const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [mappings, setMappings] = useState<Record<number, Mapping>>({});
   const [feedback, setFeedback] = useState<Record<number, boolean | null>>({});
   const [finished, setFinished] = useState<{ score: number; passed: boolean } | null>(null);
@@ -71,23 +59,42 @@ export default function QuizPage() {
 
   const allAnswered = quiz.questions.every(q => feedback[q.id] !== null && mappings[q.id] && Object.keys(mappings[q.id]).length >= Object.keys(q.answerMap).length);
 
+  // If you have no interfaces yet, minimally type the items:
+  const renderQuestions = () => (
+    quiz?.questions.map((q: any) => (
+      <div key={q.id} style={{ background: "#fff", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 20, marginBottom: 8 }}>{q.prompt}</div>
+        <DragDropQuiz
+          items={q.items.items}
+          targets={q.targets.targets}
+          onChange={(m) => onChangeMapping(q.id, m)}
+        />
+        <div className="feedback">
+          {feedback[q.id] === true && <span style={{ color: "green" }}>⭐ Great job!</span>}
+          {feedback[q.id] === false && <span style={{ color: "tomato" }}>Try again!</span>}
+        </div>
+      </div>
+    ))
+  )
+
+  const collectAnswers = () => {
+    const answers = quiz?.questions.map((q: any) => {
+      return { id: q.id, answer: q.selected }
+    }) || []
+    return answers
+  }
+
+  const scoreQuiz = () => {
+    const score = quiz?.questions.reduce((acc: number, q: any) => {
+      return acc
+    }, 0) ?? 0
+    return score
+  }
+
   return (
     <div className="container">
       <h2>Quiz</h2>
-      {quiz.questions.map(q => (
-        <div key={q.id} style={{ background: "#fff", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>{q.prompt}</div>
-          <DragDropQuiz
-            items={q.items.items}
-            targets={q.targets.targets}
-            onChange={(m) => onChangeMapping(q.id, m)}
-          />
-          <div className="feedback">
-            {feedback[q.id] === true && <span style={{ color: "green" }}>⭐ Great job!</span>}
-            {feedback[q.id] === false && <span style={{ color: "tomato" }}>Try again!</span>}
-          </div>
-        </div>
-      ))}
+      {renderQuestions()}
       <div className="controls">
         <button className="btn green" onClick={submitAnswers} disabled={!allAnswered}>Finish Quiz</button>
       </div>
