@@ -13,11 +13,17 @@
   },
   "postinstall": "prisma generate",
   "dependencies": {
-    "express": "^4.19.0",
-    "cors": "^2.8.5",
-    "serverless-http": "^3.2.0",
-    "@prisma/client": "^5.22.0",
     "@neondatabase/serverless": "^0.10.0",
-    "@prisma/adapter-neon": "^5.22.0"
+    "@prisma/adapter-neon": "^5.22.0",
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.0",
+    "serverless-http": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
   }
 }

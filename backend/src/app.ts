@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 
@@ -13,14 +13,20 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, cb) => (!origin || allowedOrigins.includes(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS"))),
+    origin: (origin: string | undefined, cb: (err: Error | null, ok?: boolean) => void) => {
+      if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+      else cb(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
 
-app.get("/health", (_req, res) => res.json({ ok: true }));
+app.get("/health", (_req: Request, res: Response) => res.json({ ok: true }));
 
 // mount routes here
 // app.use("/auth", authRouter);
 
 export default app;
+{
+  "engines": { "node": ">=18" }
+}
