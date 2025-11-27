@@ -4,11 +4,20 @@ import { api } from '@/services/api'
 import DragDropQuiz, { Mapping } from "@/components/DragDropQuiz";
 import { useChild } from "@/state/ChildContext";
 
+// Define types used in this page
 type Choice = { id: string; text: string; correct?: boolean }
-type Question = { id: string; text: string; choices: Choice[]; selected?: string }
+type Question = {
+  id: string
+  text: string
+  choices: Choice[]
+  // if you store answers keyed by something, type it explicitly:
+  answerMap?: Record<string, string>  // key -> selectedChoiceId
+  // or a single selected answer:
+  selected?: string
+}
 type Quiz = { id: string; title: string; questions: Question[] }
 
-export default function QuizPage() {
+const QuizPage: React.FC = () => {
   const { quizId } = useParams();
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [mappings, setMappings] = useState<Record<number, Mapping>>({});
@@ -54,7 +63,11 @@ export default function QuizPage() {
   // Guard in actions
   const submitAnswers = async () => {
     if (!quiz) return
-    await api.submitQuiz(quiz.id, {/* payload */})
+    const payload = quiz.questions.map((q: Question) => ({
+      questionId: q.id,
+      answer: q.selected ?? ''
+    }))
+    await api.submitQuiz(quiz.id, { answers: payload })
   }
 
   const allAnswered = quiz.questions.every(q => feedback[q.id] !== null && mappings[q.id] && Object.keys(mappings[q.id]).length >= Object.keys(q.answerMap).length);
@@ -107,3 +120,5 @@ export default function QuizPage() {
     </div>
   );
 }
+
+export default QuizPage;
