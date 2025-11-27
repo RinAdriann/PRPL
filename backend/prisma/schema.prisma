@@ -37,3 +37,11 @@ model Progress {
   lesson    Lesson   @relation(fields:[lessonId], references:[id])
   @@unique([userId, lessonId])
 }
+
+model Quiz {
+  id        String   @id @default(uuid())
+  title     String
+  questions Json     // Store questions as JSON, or create a Question model if you want relations
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
