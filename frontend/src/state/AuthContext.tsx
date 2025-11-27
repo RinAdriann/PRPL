@@ -6,13 +6,15 @@ interface User {
   email: string;
   role: string;
 }
-interface AuthCtx {
-  user: User | null;
-  loading: boolean;
-  login: (e: string, p: string) => Promise<void>;
-  register: (e: string, p: string) => Promise<void>;
-  guestLogin: () => Promise<void>;
-  logout: () => void;
+export interface AuthCtx {
+  login: (email: string, password: string) => Promise<any>
+  register: (email: string, password: string, role?: string) => Promise<any>
+  guest: () => Promise<any>
+  educatorId?: string
+  educatorChildren?: any[]
+  get?: (path: string) => Promise<any>
+  post?: (path: string, body: any) => Promise<any>
+  lessonProgress: (lessonId: string) => Promise<any>
 }
 
 const AuthContext = createContext<AuthCtx | undefined>(undefined);
@@ -33,8 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(data.token);
     setUser(data.user);
   }
-  async function register(email: string, password: string) {
-    const data = await api.register(email, password);
+  async function register(email: string, password: string, role?: string) {
+    const data = await api.register(email, password, role);
     localStorage.setItem("token", data.token);
     setToken(data.token);
     setUser(data.user);

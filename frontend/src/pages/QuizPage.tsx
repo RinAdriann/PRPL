@@ -44,7 +44,7 @@ export default function QuizPage() {
     load();
   }, [quizId]);
 
-  if (!quiz) return <div className="container">Loading...</div>;
+  if (!quiz) return <div>Loading...</div>;
 
   function onChangeMapping(qId: number, map: Mapping) {
     setMappings(prev => ({ ...prev, [qId]: map }));
