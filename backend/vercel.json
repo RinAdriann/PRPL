@@ -3,13 +3,10 @@
   "functions": {
     "api/*.js": {
       "runtime": "nodejs20.x",
-      "includeFiles": [
-        "node_modules/.prisma/client/**",
-        "prisma/**"
-      ]
+      "includeFiles": "node_modules/.prisma/client/**"
     }
   },
   "routes": [
-    { "src": "/(.*)", "dest": "api/index.js" }
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
