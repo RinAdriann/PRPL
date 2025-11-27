@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": ["node", "vite/client"]
+    "types": ["vite/client"]
   },
   "include": ["src"],
   "exclude": ["dist"]
