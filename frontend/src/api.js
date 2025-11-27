@@ -27,9 +27,15 @@ export async function login({ email, password }) {
 }
 
 export async function getHealth() {
-  const r = await fetch(`${API}/health`);
-  if (!r.ok) throw new Error("Health failed");
-  return r.json();
+  const res = await fetch(`${API}/health`);
+  if (!res.ok) throw new Error("Health failed");
+  return res.json();
+}
+
+export async function getQuizzes() {
+  const res = await fetch(`${API}/quizzes`, { headers: authHeaders() });
+  if (!res.ok) throw new Error("Failed to fetch quizzes");
+  return res.json();
 }
 
 // Lessons + modules
