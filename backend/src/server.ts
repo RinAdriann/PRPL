@@ -34,3 +34,8 @@ app.use('/api/educator', educatorRouter);
 app.use('/api/progress', progressRouter);
 
 export default app;
+
+import app from "./app";
+
+const port = Number(process.env.PORT || 8080);
+app.listen(port, () => console.log(`Backend listening on :${port}`));

@@ -38,7 +38,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "engines": {
-    "node": ">=18"
+    "node": "18.x"
   },
   "postinstall": "prisma generate"
 }
