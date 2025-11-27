@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "functions": {
+    "api/[[...route]].ts": { "runtime": "nodejs18.x" }
+  },
+  "routes": [{ "src": "/(.*)", "dest": "/api/[[...route]].ts" }]
+}

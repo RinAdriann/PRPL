@@ -33,5 +33,4 @@ app.use("/api/lessons", lessonsRouter);
 app.use('/api/educator', educatorRouter);
 app.use('/api/progress', progressRouter);
 
-const port = Number(process.env.PORT || 8080);
-app.listen(port, () => console.log(`Backend listening on :${port}`));
+export default app;
