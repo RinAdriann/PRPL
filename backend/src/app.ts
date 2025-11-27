@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -6,14 +9,16 @@ const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
 
-const allowedOrigins = [
+const allowedOrigins: string[] = [
   "http://localhost:5173",
   process.env.FRONTEND_ORIGIN || "https://eduvillage.vercel.app",
-].filter(Boolean);
+].filter(Boolean) as string[];
+
+type CorsCallback = (err: Error | null, allow?: boolean) => void;
 
 app.use(
   cors({
-    origin: (origin: string | undefined, cb: (err: Error | null, ok?: boolean) => void) => {
+    origin: (origin: string | undefined, cb: CorsCallback): void => {
       if (!origin || allowedOrigins.includes(origin)) cb(null, true);
       else cb(new Error("Not allowed by CORS"));
     },
@@ -21,10 +26,9 @@ app.use(
   })
 );
 
-app.get("/health", (_req: Request, res: Response) => res.json({ ok: true }));
-
-// mount routes here
-// app.use("/auth", authRouter);
+app.get("/health", (_req: Request, res: Response) => {
+  res.json({ ok: true });
+});
 
 export default app;
 {
