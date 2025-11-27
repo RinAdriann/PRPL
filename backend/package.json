@@ -5,9 +5,8 @@
   "scripts": {
     "dev": "node src/server.js",
     "start": "node src/server.js",
-    "prisma:migrate": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
-    "build:prisma": "prisma generate"
+    "prisma:migrate": "prisma migrate deploy"
   },
   "engines": {
     "node": "24.x"

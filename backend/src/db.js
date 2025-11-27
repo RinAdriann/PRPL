@@ -1,6 +1,3 @@
 import { PrismaClient } from "@prisma/client";
-
-const globalAny = globalThis;
-
-export const prisma =
-  globalAny.__prisma || (globalAny.__prisma = new PrismaClient());
+const g = globalThis;
+export const prisma = g.__prisma || (g.__prisma = new PrismaClient());

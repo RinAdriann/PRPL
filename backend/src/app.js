@@ -10,6 +10,7 @@ import performanceRouter from "./routes/performance.js";
 import progressRouter from "./routes/progress.js";
 import quizzesRouter from "./routes/quizzes.js";
 import lessonsRouter from "./routes/lessons.js";
+import { prisma } from "./db.js";
 
 const app = express();
 app.use(express.json());
@@ -37,5 +38,14 @@ app.use("/performance", performanceRouter);
 app.use("/progress", progressRouter);
 app.use("/quizzes", quizzesRouter);
 app.use("/lessons", lessonsRouter);
+
+(async () => {
+  try {
+    await prisma.$connect();
+    console.log("Prisma connected");
+  } catch (e) {
+    console.error("Prisma init error:", e);
+  }
+})();
 
 export default app;
