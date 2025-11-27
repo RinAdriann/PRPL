@@ -9,18 +9,19 @@ const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
 
-const allowedOrigins: string[] = [
+const allowedOrigins = [
   "http://localhost:5173",
   process.env.FRONTEND_ORIGIN || "https://eduvillage.vercel.app",
 ].filter(Boolean) as string[];
 
-type CorsCallback = (err: Error | null, allow?: boolean) => void;
-
 app.use(
   cors({
-    origin: (origin: string | undefined, cb: CorsCallback): void => {
-      if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-      else cb(new Error("Not allowed by CORS"));
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
     },
     credentials: true,
   })
@@ -29,6 +30,16 @@ app.use(
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
+
+// Import and mount routers if they exist
+// import educatorRouter from "./routes/educator";
+// import performanceRouter from "./routes/performance";
+// import progressRouter from "./routes/progress";
+// import quizzesRouter from "./routes/quizzes";
+// app.use("/educator", educatorRouter);
+// app.use("/performance", performanceRouter);
+// app.use("/progress", progressRouter);
+// app.use("/quizzes", quizzesRouter);
 
 export default app;
 {
