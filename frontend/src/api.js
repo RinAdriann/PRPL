@@ -1,8 +1,20 @@
-const API = import.meta.env.VITE_API_URL;
+const RAW = import.meta.env.VITE_API_URL || "";
+const API = RAW.replace(/\/+$/,""); // strip trailing slash
 
 function authHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function request(path, init = {}) {
+  const url = `${API}${path.startsWith("/") ? path : `/${path}`}`;
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    const txt = await res.text().catch(()=> "");
+    throw new Error(`[${res.status}] ${url} ${txt || res.statusText}`);
+  }
+  const ct = res.headers.get("content-type") || "";
+  return ct.includes("application/json") ? res.json() : res.text();
 }
 
 // Auth
@@ -27,15 +39,10 @@ export async function login({ email, password }) {
 }
 
 export async function getHealth() {
-  const res = await fetch(`${API}/health`);
-  if (!res.ok) throw new Error("Health failed");
-  return res.json();
+  return request("/health");
 }
-
 export async function getQuizzes() {
-  const res = await fetch(`${API}/quizzes`, { headers: authHeaders() });
-  if (!res.ok) throw new Error("Failed to fetch quizzes");
-  return res.json();
+  return request("/quizzes", { headers: authHeaders() });
 }
 
 // Lessons + modules
