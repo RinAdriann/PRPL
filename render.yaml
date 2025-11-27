@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: eduvillage-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npm run prisma:migrate && npm run start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_1Fdx5mXfMITP@ep-raspy-voice-a10bckz0-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+      - key: FRONTEND_ORIGIN
+        value: https://eduvillage.vercel.app
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080

@@ -18,8 +18,8 @@ type Quiz = { id: string; title: string; questions: Question[] }
 const QuizPage: React.FC = () => {
   const { quizId } = useParams();
   const [quiz, setQuiz] = useState<Quiz | null>(null)
-  const [mappings, setMappings] = useState<Record<number, Mapping>>({});
-  const [feedback, setFeedback] = useState<Record<number, boolean | null>>({});
+  const [mappings, setMappings] = useState<Record<string, Mapping>>({});
+  const [feedback, setFeedback] = useState<Record<string, boolean | null>>({});
   const [finished, setFinished] = useState<{ score: number; passed: boolean } | null>(null);
   const { childId } = useChild();
   const navigate = useNavigate();
@@ -40,11 +40,12 @@ const QuizPage: React.FC = () => {
   }, [quizId]);
 
   // Guard before any access
-  if (!quiz) return null
+  if (!quiz) {
+    return <div>Loading...</div>;
+  }
 
-  function onChangeMapping(qId: number, map: Mapping) {
+  function onChangeMapping(qId: string, map: Mapping) {
     setMappings(prev => ({ ...prev, [qId]: map }));
-    // local instant feedback when fully matched
     const q = quiz.questions.find(q => q.id === qId)!;
     const keys = Object.keys(q.answerMap);
     const allPlaced = keys.every(k => map[k]);

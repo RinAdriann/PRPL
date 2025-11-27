@@ -8,40 +8,113 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
   password  String
-  role      String   @default("educator") // educator | guest | child ...
-  createdAt DateTime @default(now())
+  name      String? // <-- Add this
+  role      String     @default("educator")
+  createdAt DateTime   @default(now())
   lessons   Lesson[]
   progress  Progress[]
+  children  Child[]    @relation("UserChildren") // <-- Add this
 }
 
 model Lesson {
-  id        String    @id @default(cuid())
-  title     String
-  description String?   // short explanation
-  ownerId   String?
-  owner     User?     @relation(fields: [ownerId], references: [id])
-  createdAt DateTime  @default(now())
-  progress  Progress[]
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  ownerId     String?
+  owner       User?      @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime   @default(now())
+  progress    Progress[]
+  topic       String? // <-- Already present
+  difficulty  String? // <-- Add this
+  quizzes     Quiz[]
 }
 
 model Progress {
-  id        String   @id @default(cuid())
-  userId    String
-  lessonId  String
-  percent   Int      @default(0)
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields:[userId], references:[id])
-  lesson    Lesson   @relation(fields:[lessonId], references:[id])
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  percent     Int       @default(0)
+  updatedAt   DateTime  @updatedAt
+  completed   Boolean   @default(false) // <-- Add this
+  completedAt DateTime? // <-- Add this
+  user        User      @relation(fields: [userId], references: [id])
+  lesson      Lesson    @relation(fields: [lessonId], references: [id])
+  childId     String?
+  child       Child?    @relation("ChildProgress", fields: [childId], references: [id])
+
   @@unique([userId, lessonId])
 }
 
+model Educator {
+  id                String       @id @default(cuid())
+  name              String
+  email             String       @unique
+  defaultDifficulty String? // <-- Add this
+  classrooms        Classroom[]
+  enrollments       Enrollment[]
+}
+
+model Classroom {
+  id          String       @id @default(cuid())
+  name        String
+  educatorId  String
+  educator    Educator     @relation(fields: [educatorId], references: [id])
+  children    Child[]
+  enrollments Enrollment[] @relation("ClassroomEnrollments")
+}
+
+model Child {
+  id           String        @id @default(cuid())
+  name         String
+  classroomId  String
+  classroom    Classroom     @relation(fields: [classroomId], references: [id])
+  enrollments  Enrollment[]
+  progress     Progress[]    @relation("ChildProgress")
+  quizAttempts QuizAttempt[]
+  rewards      Reward[]
+  unlockedLvl  Int? // <-- Add this
+  userId       String? // <-- Add this if you want to relate to User
+  user         User?         @relation("UserChildren", fields: [userId], references: [id])
+}
+
+model Enrollment {
+  id          String     @id @default(cuid())
+  childId     String
+  educatorId  String
+  classroomId String? // <-- Add this if you want to relate to Classroom
+  child       Child      @relation(fields: [childId], references: [id])
+  educator    Educator   @relation(fields: [educatorId], references: [id])
+  classroom   Classroom? @relation("ClassroomEnrollments", fields: [classroomId], references: [id])
+}
+
 model Quiz {
-  id        String   @id @default(uuid())
-  title     String
-  questions Json     // Store questions as JSON, or create a Question model if you want relations
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(uuid())
+  title        String
+  questions    Json
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lessonId     String?
+  lesson       Lesson?       @relation(fields: [lessonId], references: [id])
+  topic        String? // <-- Add this
+  quizAttempts QuizAttempt[]
+}
+
+model QuizAttempt {
+  id      String @id @default(cuid())
+  childId String
+  quizId  String
+  score   Int
+  quiz    Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  child   Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+model Reward {
+  id       String   @id @default(cuid())
+  childId  String
+  child    Child    @relation(fields: [childId], references: [id])
+  name     String
+  earnedAt DateTime @default(now())
 }
