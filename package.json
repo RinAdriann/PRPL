@@ -1,5 +1,16 @@
 {
+  "name": "PRPL",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node backend/src/server.js"
+  },
   "devDependencies": {
     "@types/morgan": "^1.9.10"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }

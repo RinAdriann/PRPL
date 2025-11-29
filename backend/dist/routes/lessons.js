@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { prisma } from '../prisma';
-import { auth } from '../middleware/auth';
+import { prisma } from '../prisma.js';
+import { auth } from '../middleware/auth.js';
 export const lessonsRouter = Router();
 // Public list
 lessonsRouter.get('/', async (_req, res) => {

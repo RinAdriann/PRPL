@@ -2,7 +2,7 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { prisma } from '../prisma';
+import { prisma } from '../prisma.js';
 export const authRouter = Router();
 authRouter.post('/register', async (req, res) => {
     console.log('[REGISTER]', req.body);

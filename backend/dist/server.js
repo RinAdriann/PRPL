@@ -4,8 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 import { authRouter } from "./routes/auth.js";
 import { lessonsRouter } from "./routes/lessons.js";
-import { educatorRouter } from './routes/educator';
-import { progressRouter } from './routes/progress';
+import { educatorRouter } from './routes/educator.js';
+import { progressRouter } from './routes/progress.js';
 const app = express();
 app.use(cors({
     origin: [/http:\/\/localhost:\d+$/],
