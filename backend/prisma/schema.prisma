@@ -1,30 +1,27 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      String   // 'student' | 'educator'
-  lessons   Lesson[]
-  progress  ModuleProgress[]
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String
+  role     String
+  progress ModuleProgress[]
 }
 
 model Lesson {
-  id          String    @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String?
   topic       String?
   coverUrl    String?
-  ownerId     String?
-  owner       User?      @relation(fields: [ownerId], references: [id])
   modules     Module[]
   quizzes     Quiz[]
 }
@@ -38,21 +35,20 @@ model Module {
 }
 
 model Quiz {
-  id       String   @id @default(cuid())
+  id       String  @id @default(cuid())
   title    String
   topic    String?
   lessonId String?
-  lesson   Lesson?  @relation(fields: [lessonId], references: [id])
-  // questions could be a JSON field if needed
+  lesson   Lesson? @relation(fields: [lessonId], references: [id])
 }
 
 model ModuleProgress {
-  userId    String
-  moduleId  String
-  lessonId  String
+  userId     String
+  moduleId   String
+  lessonId   String
   completedAt DateTime?
-  user      User   @relation(fields: [userId], references: [id])
-  module    Module @relation(fields: [moduleId], references: [id])
+  user       User   @relation(fields: [userId], references: [id])
+  module     Module @relation(fields: [moduleId], references: [id])
   @@id([userId, moduleId])
   @@index([lessonId])
 }

@@ -1,25 +1,22 @@
 {
-  "name": "eduvillage-backend",
+  "name": "prpl-backend-fastify",
   "version": "1.0.0",
   "type": "module",
-  "engines": { "node": "20.x" },
-  "scripts": {
-    "dev": "node src/server.js",
-    "start": "node src/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy"
+  "engines": {
+    "node": "20.x"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "morgan": "^1.10.0",
-    "dotenv": "^16.4.5",
-    "jsonwebtoken": "^9.0.2",
-    "bcrypt": "^5.1.1",
+    "fastify": "^4.27.0",
+    "@fastify/cors": "^10.0.0",
     "@prisma/client": "5.22.0"
   },
   "devDependencies": {
     "prisma": "5.22.0"
+  },
+  "scripts": {
+    "dev": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
   },
   "postinstall": "prisma generate"
 }
