@@ -1,4 +1,10 @@
 {
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node backend/dist/server.js",
+    "dev": "node backend/src/server.js"
+  },
   "devDependencies": {
     "@types/morgan": "^1.9.10"
   }
