@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "start": "node backend/dist/server.js",
     "dev": "node backend/src/server.js"
