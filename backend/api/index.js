@@ -4,135 +4,110 @@ import fastifyCors from "@fastify/cors";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({ log: ["error"] });
+function iso(d) { return d ? d.toISOString() : null; }
 
 export default async function handler(req, res) {
-	const app = Fastify({ logger: false });
+  const app = Fastify({ logger: false });
 
-	await app.register(fastifyCors, {
-		origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
-		credentials: true,
-	});
+  await app.register(fastifyCors, {
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+    credentials: true
+  });
 
-	// Health + root
-	app.get("/", async () => ({ ok: true, service: "fastify" }));
-	app.get("/health", async () => ({ status: "ok" }));
+  // Root & health
+  app.get("/", async () => ({ ok: true, service: "fastify" }));
+  app.get("/health", async () => ({ status: "ok" }));
 
-	// Auth (demo: plain password; add hashing/JWT later)
-	app.post("/auth/register", async (request, reply) => {
-		const { email, password, role } = request.body || {};
-		if (!email || !password || !role)
-			return reply.code(400).send({ error: "Missing fields" });
+  // Auth (demo: plain password)
+  app.post("/auth/register", async (r, reply) => {
+    const { email, password, role } = r.body || {};
+    if (!email || !password || !role) return reply.code(400).send({ error: "Missing fields" });
+    const exists = await prisma.user.findUnique({ where: { email } });
+    if (exists) return reply.code(409).send({ error: "Email exists" });
+    const user = await prisma.user.create({ data: { email, password, role } });
+    return { token: `demo-${user.id}`, user: { id: user.id, email: user.email, role: user.role } };
+  });
 
-		const exists = await prisma.user.findUnique({ where: { email } });
-		if (exists) return reply.code(409).send({ error: "Email exists" });
+  app.post("/auth/login", async (r, reply) => {
+    const { email, password } = r.body || {};
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.password !== password) return reply.code(401).send({ error: "Invalid credentials" });
+    return { token: `demo-${user.id}`, user: { id: user.id, email: user.email, role: user.role } };
+  });
 
-		const user = await prisma.user.create({
-			data: { email, password, role },
-		});
-		return {
-			token: `demo-${user.id}`,
-			user: { id: user.id, email: user.email, role: user.role },
-		};
-	});
+  // Lessons list
+  app.get("/lessons", async () => {
+    const lessons = await prisma.lesson.findMany({ include: { modules: true, quizzes: true } });
+    return lessons.map(l => ({ ...l, quizzesCount: (l.quizzes || []).length }));
+  });
 
-	app.post("/auth/login", async (request, reply) => {
-		const { email, password } = request.body || {};
-		const user = await prisma.user.findUnique({ where: { email } });
-		if (!user || user.password !== password)
-			return reply.code(401).send({ error: "Invalid credentials" });
-		return {
-			token: `demo-${user.id}`,
-			user: { id: user.id, email: user.email, role: user.role },
-		};
-	});
+  // Enroll (placeholder)
+  app.post("/lessons/:lessonId/enroll", async (r, reply) => {
+    const { lessonId } = r.params;
+    const lesson = await prisma.lesson.findUnique({ where: { id: String(lessonId) } });
+    if (!lesson) return reply.code(404).send({ error: "Lesson not found" });
+    return { ok: true };
+  });
 
-	// Lessons (+modules +quizzes +quizzesCount)
-	app.get("/lessons", async () => {
-		const lessons = await prisma.lesson.findMany({
-			include: { modules: true, quizzes: true },
-		});
-		return lessons.map((l) => ({
-			...l,
-			quizzesCount: (l.quizzes || []).length,
-		}));
-	});
+  // Quizzes by lesson
+  app.get("/lessons/:lessonId/quizzes", async (r, reply) => {
+    const { lessonId } = r.params;
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: String(lessonId) },
+      include: { quizzes: true }
+    });
+    if (!lesson) return reply.code(404).send({ error: "Lesson not found" });
+    return lesson.quizzes || [];
+  });
 
-	// Enroll (create a join/record; if you don’t have a table, return ok)
-	app.post("/lessons/:lessonId/enroll", async (request, reply) => {
-		const { lessonId } = request.params;
-		const found = await prisma.lesson.findUnique({
-			where: { id: String(lessonId) },
-		});
-		if (!found) return reply.code(404).send({ error: "Lesson not found" });
-		// If you have an Enrollment model, create it here. For now:
-		return { ok: true };
-	});
+  // Progress per module
+  app.post("/progress/module", async (r, reply) => {
+    const { lessonId, moduleId, completed } = r.body || {};
+    if (!lessonId || !moduleId) return reply.code(400).send({ error: "Missing ids" });
 
-	// Quizzes by lesson
-	app.get("/lessons/:lessonId/quizzes", async (request, reply) => {
-		const { lessonId } = request.params;
-		const lesson = await prisma.lesson.findUnique({
-			where: { id: String(lessonId) },
-			include: { quizzes: true },
-		});
-		if (!lesson) return reply.code(404).send({ error: "Lesson not found" });
-		return lesson.quizzes || [];
-	});
+    const lesson = await prisma.lesson.findUnique({ where: { id: String(lessonId) } });
+    if (!lesson) return reply.code(404).send({ error: "Lesson not found" });
 
-	// Progress per module
-	app.post("/progress/module", async (request, reply) => {
-		const { lessonId, moduleId, completed } = request.body || {};
-		if (!lessonId || !moduleId)
-			return reply.code(400).send({ error: "Missing ids" });
+    const module = await prisma.module.findUnique({ where: { id: String(moduleId) } });
+    if (!module || module.lessonId !== lesson.id) return reply.code(404).send({ error: "Module not found" });
 
-		const lesson = await prisma.lesson.findUnique({
-			where: { id: String(lessonId) },
-		});
-		if (!lesson) return reply.code(404).send({ error: "Lesson not found" });
+    const key = { userId_moduleId: { userId: "demo", moduleId: String(moduleId) } };
+    const existing = await prisma.moduleProgress.findUnique({ where: key });
+    const data = {
+      userId: "demo",
+      lessonId: String(lessonId),
+      moduleId: String(moduleId),
+      completedAt: completed ? new Date() : null
+    };
+    const record = existing
+      ? await prisma.moduleProgress.update({ where: key, data })
+      : await prisma.moduleProgress.create({ data });
 
-		const module = await prisma.module.findUnique({
-			where: { id: String(moduleId) },
-		});
-		if (!module || module.lessonId !== lesson.id)
-			return reply.code(404).send({ error: "Module not found" });
+    return {
+      userId: record.userId,
+      lessonId: record.lessonId,
+      moduleId: record.moduleId,
+      completedAt: iso(record.completedAt)
+    };
+  });
 
-		const key = {
-			userId_moduleId: { userId: "demo", moduleId: String(moduleId) },
-		};
-		const data = {
-			userId: "demo",
-			lessonId: String(lessonId),
-			moduleId: String(moduleId),
-			completedAt: completed ? new Date() : null,
-		};
+  // Progress list
+  app.get("/progress", async () => {
+    const rows = await prisma.moduleProgress.findMany({
+      orderBy: [{ lessonId: "asc" }, { moduleId: "asc" }]
+    });
+    return rows.map(r => ({
+      userId: r.userId,
+      lessonId: r.lessonId,
+      moduleId: r.moduleId,
+      completedAt: iso(r.completedAt)
+    }));
+  });
 
-		const existing = await prisma.moduleProgress.findUnique({ where: key });
-		const record = existing
-			? await prisma.moduleProgress.update({ where: key, data })
-			: await prisma.moduleProgress.create({ data });
+  // Placeholder educator/performance routes (add real logic later)
+  app.get("/educator/summary", async () => ({ pending: 0 }));
+  app.get("/performance/overview", async () => ({ metrics: [] }));
 
-		return {
-			userId: record.userId,
-			lessonId: record.lessonId,
-			moduleId: record.moduleId,
-			completedAt: record.completedAt ? record.completedAt.toISOString() : null,
-		};
-	});
-
-	// Progress list (for Progress page)
-	app.get("/progress", async () => {
-		const rows = await prisma.moduleProgress.findMany({
-			orderBy: [{ lessonId: "asc" }, { moduleId: "asc" }],
-		});
-		return rows.map((r) => ({
-			userId: r.userId,
-			lessonId: r.lessonId,
-			moduleId: r.moduleId,
-			completedAt: r.completedAt ? r.completedAt.toISOString() : null,
-		}));
-	});
-
-	// Let Fastify handle the request
-	await app.ready();
-	app.server.emit("request", req, res);
+  await app.ready();
+  app.server.emit("request", req, res);
 }

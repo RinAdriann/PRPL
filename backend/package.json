@@ -2,12 +2,10 @@
   "name": "prpl-backend-fastify",
   "version": "1.0.0",
   "type": "module",
-  "engines": {
-    "node": "24.x"
-  },
+  "engines": { "node": "20.x" },
   "dependencies": {
-    "fastify": "^4.27.0",
-    "@fastify/cors": "^10.0.0",
+    "fastify": "^4.29.1",
+    "@fastify/cors": "^10.1.0",
     "@prisma/client": "5.22.0"
   },
   "devDependencies": {
