@@ -1,0 +1,18 @@
+{
+  "functions": {
+    "source": "backend/functions"
+  },
+  "hosting": {
+    "public": "eduvillage/dist",
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": "api"
+      },
+      {
+        "source": "!/api/**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
