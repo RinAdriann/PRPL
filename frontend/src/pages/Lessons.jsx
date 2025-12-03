@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiGet } from "../api";
 import {
   getLessons, getQuizzesByLesson, enrollLesson,
   createLesson, updateLesson, deleteLesson,
@@ -33,7 +34,11 @@ export default function Lessons() {
     } catch (e) { setMsg(e.message); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    apiGet("/lessons")
+      .then(setLessons)
+      .catch((e) => console.error("Failed to load lessons:", e));
+  }, []);
 
   const handleEnroll = async (lessonId) => {
     try {

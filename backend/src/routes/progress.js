@@ -1,30 +1,23 @@
-import { Router } from "express";
+import express from "express";
 import { prisma } from "../db.js";
-import jwt from "jsonwebtoken";
+import { requireAuth as auth } from "../middleware/auth.js";
 
-const router = Router();
-
-// Simple auth extraction
-function getUser(req) {
-  const h = req.headers.authorization;
-  if (!h) return null;
-  const token = h.replace("Bearer ","");
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
-  } catch { return null; }
-}
+const progressRouter = express.Router();
 
 // List progress
-router.get("/", async (_req, res) => {
-  const items = await prisma.moduleProgress.findMany();
-  res.json(items);
+progressRouter.get("/", auth, async (_req, res) => {
+  try {
+    const progress = await prisma.progress.findMany();
+    res.json(progress);
+  } catch (err) {
+    console.error("List progress error:", err);
+    res.status(500).json({ error: "Failed to list progress" });
+  }
 });
 
 // Toggle module completion
-router.post("/module", async (req, res) => {
-  const user = getUser(req);
-  if (!user) return res.status(401).json({ error: "Unauthenticated" });
+progressRouter.post("/module", auth, async (req, res) => {
+  const user = req.user; // set by auth middleware
   const { lessonId, moduleId, completed } = req.body;
   if (!lessonId || !moduleId) return res.status(400).json({ error: "Missing ids" });
 
@@ -52,4 +45,4 @@ router.post("/module", async (req, res) => {
   res.json(record);
 });
 
-export default router;
+export default progressRouter;

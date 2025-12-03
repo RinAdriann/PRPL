@@ -1,8 +1,8 @@
-import { Router } from "express";
+import express from "express";
 import { prisma } from "../db.js";
 import { requireAuth as auth } from "../middleware/auth.js";
 
-const lessonsRouter = Router();
+const lessonsRouter = express.Router();
 
 // Create lesson
 lessonsRouter.post("/", auth, async (req, res) => {

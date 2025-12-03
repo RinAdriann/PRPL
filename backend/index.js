@@ -1,7 +1,7 @@
-import 'fastify';
+import app from "./src/server.js";
+import { onRequest } from "firebase-functions/v2/https";
 
-import('./backend/dist/server.js')
-  .catch(err => {
-    console.error('Failed to start backend:', err);
-    process.exit(1);
-  });
+export const api = onRequest(
+  { region: "us-central1", cors: true, secrets: ["DATABASE_URL", "JWT_SECRET"] },
+  app
+);

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { apiPost } from "../api";
 
 const AuthCtx = createContext(null);
 
@@ -35,4 +36,20 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   return useContext(AuthCtx);
+}
+
+export async function login(email, password) {
+  const data = await apiPost("/auth/login", { email, password });
+  localStorage.setItem("token", data.token);
+  return data.user;
+}
+
+export async function register(email, password, role) {
+  const data = await apiPost("/auth/register", { email, password, role });
+  localStorage.setItem("token", data.token);
+  return data.user;
+}
+
+export function logout() {
+  localStorage.removeItem("token");
 }
