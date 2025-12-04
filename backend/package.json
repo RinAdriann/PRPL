@@ -5,6 +5,7 @@
   "type": "module",
   "engines": { "node": "22" },
   "scripts": {
+    "start": "node server-cloudrun.js",
     "dev": "node src/local.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy"
