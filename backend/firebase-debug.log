@@ -1,0 +1,26 @@
+[debug] [2025-12-04T09:25:06.465Z] ----------------------------------------------------------------------
+[debug] [2025-12-04T09:25:06.467Z] Command:       C:\Users\user\AppData\Local\fnm_multishells\29720_1764838974212\node.exe C:\Users\user\AppData\Local\fnm_multishells\29720_1764838974212\node_modules\firebase-tools\lib\bin\firebase.js functions:secrets:set JWT_SECRET
+[debug] [2025-12-04T09:25:06.467Z] CLI Version:   14.26.0
+[debug] [2025-12-04T09:25:06.467Z] Platform:      win32
+[debug] [2025-12-04T09:25:06.467Z] Node Version:  v22.14.0
+[debug] [2025-12-04T09:25:06.467Z] Time:          Thu Dec 04 2025 16:25:06 GMT+0700 (Western Indonesia Time)
+[debug] [2025-12-04T09:25:06.468Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-12-04T09:25:06.469Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-12-04T09:25:06.689Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-04T09:25:06.689Z] > authorizing via signed-in user (rin.adriansyah@gmail.com)
+[debug] [2025-12-04T09:25:06.690Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-04T09:25:06.690Z] > authorizing via signed-in user (rin.adriansyah@gmail.com)
+[debug] [2025-12-04T09:25:06.690Z] [iam] checking project eduvillage-0101 for permissions ["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]
+[debug] [2025-12-04T09:25:06.691Z] Checked if tokens are valid: false, expires at: 1764741941494
+[debug] [2025-12-04T09:25:06.691Z] Checked if tokens are valid: false, expires at: 1764741941494
+[debug] [2025-12-04T09:25:06.691Z] > refreshing access token with scopes: []
+[debug] [2025-12-04T09:25:06.692Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-04T09:25:06.692Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-04T09:25:06.967Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-04T09:25:06.967Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-04T09:25:06.973Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/eduvillage-0101:testIamPermissions [none]
+[debug] [2025-12-04T09:25:06.973Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/eduvillage-0101:testIamPermissions x-goog-quota-user=projects/eduvillage-0101
+[debug] [2025-12-04T09:25:06.973Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/eduvillage-0101:testIamPermissions {"permissions":["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]}
+[debug] [2025-12-04T09:25:07.325Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-12-04T09:25:07.325Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}

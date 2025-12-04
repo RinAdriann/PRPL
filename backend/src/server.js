@@ -7,7 +7,16 @@ import progressRouter from "./routes/progress.js";
 import quizzesRouter from "./routes/quizzes.js";
 
 const app = express();
-app.use(cors());
+
+// Configure CORS to allow Vercel frontend
+const corsOptions = {
+  origin: process.env.FRONTEND_ORIGIN || "*",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get("/", (_req, res) => res.send("OK"));
